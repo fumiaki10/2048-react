@@ -14,7 +14,6 @@ function App() {
             <h1>2048</h1>
 
             <div className="board">
-                {/* あとで16マスそのものに変更を加えるならkey=indexは非推奨 */}
                 {board.flat().map((cell, index) =>(
                 <div className="cell" key={index}>
                     {cell}
