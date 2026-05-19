@@ -30,6 +30,28 @@ function addRandomTile(board) {
     return newBoard;
 }
 
+// 左入力3-0
+function moveRowLeft(row) {
+    // row⇒配列の1列分　nullじゃないものを残す処理(3-1)
+    const numbers = row.filter((cell) => cell !== null);
+    // 合体後の配列を用意(3-2)
+    const result = [];
+    // 1つずつ確認する(3-3)
+    for (let i = 0; i < numbers.length; i++) {
+        if (numbers[i] === numbers[i + 1]) {
+            result.push(numbers[i] * 2);
+            i++;
+        } else {
+            result.push(numbers[i])
+        }
+    }
+    // 空いた部分にnullを差し込む
+    while (result.length < 4) {
+        result.push(null)
+    }
+    // resultに結果を渡す
+    return result;
+}
 
 function App() {
     const [board, setBoard] = useState(() =>
