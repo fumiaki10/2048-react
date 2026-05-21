@@ -45,11 +45,11 @@ function moveRowLeft(row) {
             result.push(numbers[i])
         }
     }
-    // 空いた部分にnullを差し込む
+    // 空いた部分にnullを差し込む3-4
     while (result.length < 4) {
         result.push(null)
     }
-    // resultに結果を渡す
+    // resultに結果を外に渡す3-5
     return result;
 }
 
