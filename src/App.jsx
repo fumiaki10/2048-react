@@ -77,8 +77,11 @@ function moveRight(board) {
     return newBoard;
 }
 
+// 盤面を上に動かす(7-0)
 function moveUp(board) {
+    // コピーを横一列ずつ取得(7-1)
     const newBoard = board.map((row) => [...row]);
+    // とってきたコピーを縦ごとに引っ張ってきて(7-2)
     for (let colIndex = 0; colIndex < 4; colIndex++) {
         const column = [
             board[0][colIndex],
@@ -86,9 +89,9 @@ function moveUp(board) {
             board[2][colIndex],
             board[3][colIndex],
         ];
-
+        // moveRowLeftを適用して合体後の処理にする(7-3)
         const movedColumn = moveRowLeft(column);
-
+        // そこから縦に入れ直す
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
             newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
         }
@@ -96,6 +99,8 @@ function moveUp(board) {
 
     return newBoard
 }
+
+
 
 function App() {
     const [board, setBoard] = useState(() =>
