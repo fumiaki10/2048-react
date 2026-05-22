@@ -60,6 +60,23 @@ function moveLeft(board) {
     return newBoard;
 }
 
+// 右移動の内部処(6-0)
+function moveRowRight(row) {
+    // row情報をコピーして反転させる(6-1)
+    const reversedRow = [...row].reverse();
+    // 反転コピーされたやつに左入力の時と同じ処理で左寄せに(6-2)
+    const movedRow = moveRowLeft(reversedRow);
+    // 左寄せになった後で反転することで右寄せた状態になる
+    return movedRow.reverse();
+}
+// 右移動の入力処理(6-0-1)
+function moveRight(board) {
+    // board情報を読み込みrowという変数でmap保存⇒右移動の処理を入れる(6-0-2)
+    const newBoard = board.map((row) => moveRowRight(row));
+    // 値を返す(6-0-2)
+    return newBoard;
+}
+
 function App() {
     const [board, setBoard] = useState(() =>
         addRandomTile([
@@ -69,10 +86,17 @@ function App() {
             [null, null, null, null],
         ])
     );
-    // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-0)
+    // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
+        // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
         if (event.key === "ArrowLeft") {
             const moveBoard = moveLeft(board);
+            const boardWithNewTile = addRandomTile(moveBoard);
+            setBoard(boardWithNewTile)
+        }
+        // 押されたキーが右矢印なら移動した後の結果を2をつけて返す(5-2: 6-0)
+        if (event.key === "ArrowRight") {
+            const moveBoard = moveRight(board);
             const boardWithNewTile = addRandomTile(moveBoard);
             setBoard(boardWithNewTile)
         }
