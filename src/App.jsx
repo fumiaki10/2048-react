@@ -77,6 +77,26 @@ function moveRight(board) {
     return newBoard;
 }
 
+function moveUp(board) {
+    const newBoard = board.map((row) => [...row]);
+    for (let colIndex = 0; colIndex < 4; colIndex++) {
+        const column = [
+            board[0][colIndex],
+            board[1][colIndex],
+            board[2][colIndex],
+            board[3][colIndex],
+        ];
+
+        const movedColumn = moveRowLeft(column);
+
+        for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+        }
+    }
+
+    return newBoard
+}
+
 function App() {
     const [board, setBoard] = useState(() =>
         addRandomTile([
@@ -97,6 +117,11 @@ function App() {
         // 押されたキーが右矢印なら移動した後の結果を2をつけて返す(5-2: 6-0)
         if (event.key === "ArrowRight") {
             const moveBoard = moveRight(board);
+            const boardWithNewTile = addRandomTile(moveBoard);
+            setBoard(boardWithNewTile)
+        }
+        if (event.key === "ArrowUp") {
+            const moveBoard = moveUp(board);
             const boardWithNewTile = addRandomTile(moveBoard);
             setBoard(boardWithNewTile)
         }
