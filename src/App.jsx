@@ -53,6 +53,13 @@ function moveRowLeft(row) {
     return result;
 }
 
+// 盤面全体を左に動かす関数(4-1)
+function moveLeft(board) {
+    // boardを引数としてmoveRowLeftを適用したrowを作る(4-2)
+    const newBoard = board.map((row) => moveRowLeft(row));
+    return newBoard;
+}
+
 function App() {
     const [board, setBoard] = useState(() =>
         addRandomTile([
@@ -62,9 +69,17 @@ function App() {
             [null, null, null, null],
         ])
     );
+    // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-0)
+    function handleKeyDown(event) {
+        if (event.key === "ArrowLeft") {
+            const moveBoard = moveLeft(board);
+            const boardWithNewTile = addRandomTile(moveBoard);
+            setBoard(boardWithNewTile)
+        }
+    }
 
     return (
-        <div className="game">
+        <div className="game" tabIndex="0" onKeyDown={handleKeyDown}>
             <h1>2048</h1>
 
             <div className="board">
