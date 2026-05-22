@@ -1,0 +1,19 @@
+前のboardとボタン入力後のboardに変化があるか確認する
+
+JSON.stringify(board)
+配列を文字列にしている
+比較しやすいらしいこのほうが
+
+!==は違うかどうか
+beforeとafterで判別する方向で
+
+入力をする⇒ボード情報がのっててかつ処理した後のmoveBoardがある⇒それとboardを比べる
+毎回このboardってどっから来るんだろうかと思っているんだけど
+定義されているboardのことかと
+
+そしたらisBoardChangeに引数としてboardとmoveBoardを送って判別して来てもらう
+
+!isBoardChange　文字これでないなら
+!はtrueとfalseを反転させるので
+
+仮に異なっていたらaddRandomTIleのあたりから同じように動かす
