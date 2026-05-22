@@ -100,6 +100,7 @@ function moveUp(board) {
     return newBoard
 }
 
+// 下入力をする(8-0)
 function moveColumnDown(Column) {
 
     const reversedColumn = [...Column].reverse();
@@ -117,7 +118,7 @@ function moveDown(board) {
             board[2][colIndex],
             board[3][colIndex],
         ];
-
+        // 上入力だとmoveRowLeftだがひっくりかえすのでmoveColumnDown(8-1)
         const movedColumn = moveColumnDown(column);
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
             newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
@@ -126,6 +127,12 @@ function moveDown(board) {
 
     return newBoard
 }
+
+// ボードの状態を判別して入力後生成するか決める処理(9-0)
+function isBoardChanged(beforeBoard, afterBoard) {
+    return JSON.stringify(beforeBoard) !== JSON.stringify(afterBoard);
+}
+
 
 
 function App() {
@@ -140,27 +147,47 @@ function App() {
     // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
         // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
+
+        let moveBoard;
+        // 移動させた後にさせる前と後で違いがあるかを判別する処理(9-0-1)
         if (event.key === "ArrowLeft") {
-            const moveBoard = moveLeft(board);
-            const boardWithNewTile = addRandomTile(moveBoard);
-            setBoard(boardWithNewTile)
+            moveBoard = moveLeft(board);
+        } else if (event.key === "ArrowRight") {
+            moveBoard = moveRight(board)
+        } else if (event.key === "ArrowUp") {
+            moveBoard = moveUp(board)
+        } else if (event.key === "ArrowDown") {
+            moveBoard = moveDown(board)
         }
-        // 押されたキーが右矢印なら移動した後の結果を2をつけて返す(5-2: 6-0)
-        if (event.key === "ArrowRight") {
-            const moveBoard = moveRight(board);
-            const boardWithNewTile = addRandomTile(moveBoard);
-            setBoard(boardWithNewTile)
+
+        if (!isBoardChanged(board, moveBoard)) {
+            return;
         }
-        if (event.key === "ArrowUp") {
-            const moveBoard = moveUp(board);
-            const boardWithNewTile = addRandomTile(moveBoard);
-            setBoard(boardWithNewTile)
-        }
-        if (event.key === "ArrowDown") {
-            const moveBoard = moveDown(board);
-            const boardWithNewTile = addRandomTile(moveBoard);
-            setBoard(boardWithNewTile)
-        }
+        // 全部潜り抜けたものがタイルを増やせる(9-0-2)
+        const boardWithNewTile = addRandomTile(moveBoard);
+        setBoard(boardWithNewTile);
+        // 以前のifの処理。
+        // if (event.key === "ArrowLeft") {
+        //     const moveBoard = moveLeft(board);
+        //     const boardWithNewTile = addRandomTile(moveBoard);
+        //     setBoard(boardWithNewTile)
+        // }
+        // // 押されたキーが右矢印なら移動した後の結果を2をつけて返す(5-2: 6-0)
+        // if (event.key === "ArrowRight") {
+        //     const moveBoard = moveRight(board);
+        //     const boardWithNewTile = addRandomTile(moveBoard);
+        //     setBoard(boardWithNewTile)
+        // }
+        // if (event.key === "ArrowUp") {
+        //     const moveBoard = moveUp(board);
+        //     const boardWithNewTile = addRandomTile(moveBoard);
+        //     setBoard(boardWithNewTile)
+        // }
+        // if (event.key === "ArrowDown") {
+        //     const moveBoard = moveDown(board);
+        //     const boardWithNewTile = addRandomTile(moveBoard);
+        //     setBoard(boardWithNewTile)
+        // }
     }
 
     return (
