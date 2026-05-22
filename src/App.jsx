@@ -100,6 +100,32 @@ function moveUp(board) {
     return newBoard
 }
 
+function moveColumnDown(Column) {
+
+    const reversedColumn = [...Column].reverse();
+
+    const movedColumn = moveRowLeft(reversedColumn);
+
+    return movedColumn.reverse();
+}
+function moveDown(board) {
+    const newBoard = board.map((row) => [...row]);
+    for (let colIndex = 0; colIndex < 4; colIndex++) {
+        const column = [
+            board[0][colIndex],
+            board[1][colIndex],
+            board[2][colIndex],
+            board[3][colIndex],
+        ];
+
+        const movedColumn = moveColumnDown(column);
+        for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+        }
+    }
+
+    return newBoard
+}
 
 
 function App() {
@@ -127,6 +153,11 @@ function App() {
         }
         if (event.key === "ArrowUp") {
             const moveBoard = moveUp(board);
+            const boardWithNewTile = addRandomTile(moveBoard);
+            setBoard(boardWithNewTile)
+        }
+        if (event.key === "ArrowDown") {
+            const moveBoard = moveDown(board);
             const boardWithNewTile = addRandomTile(moveBoard);
             setBoard(boardWithNewTile)
         }
