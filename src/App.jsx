@@ -133,6 +133,32 @@ function isBoardChanged(beforeBoard, afterBoard) {
     return JSON.stringify(beforeBoard) !== JSON.stringify(afterBoard);
 }
 
+// gameOverの判定(9-0)
+function isGameOver(board) {
+    // nullがあればreturnしてくれ(9-1)
+    if (board.flat().includes(null)) {
+        return false;
+    }
+    // 横方向に同じ数字があるか確認(9-2)
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+        for (let colIndex = 0; colIndex < 3; colIndex++) {
+            if (board[rowIndex][colIndex] === board[rowIndex][colIndex + 1]) {
+                return false;
+            }
+        }
+    }
+    // こっちは縦方向(9-3)
+    for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
+        for (let colIndex = 0; colIndex < 4; colIndex++) {
+            if (board[rowIndex][colIndex] === board[rowIndex + 1][colIndex]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+
+}
 
 
 function App() {
@@ -144,6 +170,8 @@ function App() {
             [null, null, null, null],
         ])
     );
+
+    const [gameOver, setGameOver] = useState(false);
     // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
         // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
@@ -158,6 +186,8 @@ function App() {
             moveBoard = moveUp(board)
         } else if (event.key === "ArrowDown") {
             moveBoard = moveDown(board)
+        } else {
+            return;
         }
 
         if (!isBoardChanged(board, moveBoard)) {
@@ -165,7 +195,14 @@ function App() {
         }
         // 全部潜り抜けたものがタイルを増やせる(9-0-2)
         const boardWithNewTile = addRandomTile(moveBoard);
+        //   ゲームオーバーの判定9-0-3
+        if (isGameOver(boardWithNewTile)) {
+            setGameOver(true);
+        }
+
         setBoard(boardWithNewTile);
+
+
         // 以前のifの処理。
         // if (event.key === "ArrowLeft") {
         //     const moveBoard = moveLeft(board);
@@ -202,6 +239,7 @@ function App() {
                     </div>
                 ))}
             </div>
+            {gameOver && <h2>ゲームオーバー！</h2>}
         </div>
     );
 }
