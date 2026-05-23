@@ -159,19 +159,33 @@ function isGameOver(board) {
     return true;
 
 }
+// 空の盤面を作って2を2つ生成する(10-0)
+function createInitialBoard() {
+    const emptyBoard = [
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+    ];
+
+    const boardWithOneTile = addRandomTile(emptyBoard);
+    const boardWithTwoTiles = addRandomTile(boardWithOneTile);
+
+    return boardWithTwoTiles;
+}
 
 
 function App() {
-    const [board, setBoard] = useState(() =>
-        addRandomTile([
-            [null, null, null, null],
-            [null, null, null, null],
-            [null, null, null, null],
-            [null, null, null, null],
-        ])
-    );
-
+    // 空の盤面を作ってランダムに2を2つ生成する(10-0-1)
+    const [board, setBoard] = useState(createInitialBoard);
+    // gameOverようのuseState
     const [gameOver, setGameOver] = useState(false);
+
+
+    function restartGame() {
+        setBoard(createInitialBoard());
+        setGameOver(false);
+    }
     // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
         // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
@@ -230,7 +244,11 @@ function App() {
     return (
         <div className="game" tabIndex="0" onKeyDown={handleKeyDown}>
             <h1>2048</h1>
+            {gameOver && <h2>ゲームオーバー！</h2>}
 
+            <button onClick={restartGame}>
+                リスタート
+            </button>
             <div className="board">
                 {/* あとで16マスそのものに変更を加えるならkey=indexは非推奨 */}
                 {board.flat().map((cell, index) => (
@@ -239,7 +257,7 @@ function App() {
                     </div>
                 ))}
             </div>
-            {gameOver && <h2>ゲームオーバー！</h2>}
+
         </div>
     );
 }
