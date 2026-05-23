@@ -142,15 +142,19 @@ function moveUp(board) {
 }
 
 // 下入力をする(8-0)
-function moveColumnDown(Column) {
+function moveColumnDown(column) {
 
-    const reversedColumn = [...Column].reverse();
+    const reversedColumn = [...column].reverse();
 
-    const movedColumn = moveRowLeft(reversedColumn);
+    const movedResult = moveRowLeft(reversedColumn);
 
-    return movedColumn.reverse();
+    return {
+        row: movedResult.row.reverse(),
+        score: movedResult.score,
+    };
 }
 function moveDown(board) {
+    let totalScore = 0;
     const newBoard = board.map((row) => [...row]);
     for (let colIndex = 0; colIndex < 4; colIndex++) {
         const column = [
@@ -161,12 +165,18 @@ function moveDown(board) {
         ];
         // 上入力だとmoveRowLeftだがひっくりかえすのでmoveColumnDown(8-1)
         const movedColumn = moveColumnDown(column);
+
+        totalScore += movedColumn.score;
+
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+            newBoard[rowIndex][colIndex] = movedColumn.row[rowIndex];
         }
     }
 
-    return newBoard
+    return {
+        board: newBoard,
+        score: totalScore,
+    }
 }
 
 // ボードの状態を判別して入力後生成するか決める処理(9-0)
@@ -261,15 +271,11 @@ function App() {
         const boardWithNewTile = addRandomTile(moveBoard);
 
         setBoard(boardWithNewTile);
-        setScore((prevScore) => prevScore + moveResult.score)
+        setScore((prevScore) => prevScore + moveResult.score);
         //   ゲームオーバーの判定9-0-3
         if (isGameOver(boardWithNewTile)) {
             setGameOver(true);
         }
-
-        setBoard(boardWithNewTile);
-
-
         // 以前のifの処理。
         // if (event.key === "ArrowLeft") {
         //     const moveBoard = moveLeft(board);
