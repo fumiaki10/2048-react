@@ -88,7 +88,7 @@ function moveRowRight(row) {
     const movedResult = moveRowLeft(reversedRow);
     // moveRowLeftのスコアと配列の値を外に出せるように(11-3-1)
     return {
-        row: movedResult.reverse(),
+        row: movedResult.row.reverse(),
         score: movedResult.score,
     };
 }
@@ -113,6 +113,8 @@ function moveRight(board) {
 // 盤面を上に動かす(7-0)
 function moveUp(board) {
     // コピーを横一列ずつ取得(7-1)
+    let totalScore = 0;
+
     const newBoard = board.map((row) => [...row]);
     // とってきたコピーを縦ごとに引っ張ってきて(7-2)
     for (let colIndex = 0; colIndex < 4; colIndex++) {
@@ -124,13 +126,19 @@ function moveUp(board) {
         ];
         // moveRowLeftを適用して合体後の処理にする(7-3)
         const movedColumn = moveRowLeft(column);
+
+        totalScore += movedColumn.score;
         // そこから縦に入れ直す
+        // .rowを追加して配列データを抜き出せるように追記(11-4-0)
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+            newBoard[rowIndex][colIndex] = movedColumn.row[rowIndex];
         }
     }
 
-    return newBoard
+    return {
+        board: newBoard,
+        score: totalScore,
+    };
 }
 
 // 下入力をする(8-0)
