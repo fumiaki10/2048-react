@@ -84,17 +84,30 @@ function moveLeft(board) {
 function moveRowRight(row) {
     // row情報をコピーして反転させる(6-1)
     const reversedRow = [...row].reverse();
-    // 反転コピーされたやつに左入力の時と同じ処理で左寄せに(6-2)
-    const movedRow = moveRowLeft(reversedRow);
-    // 左寄せになった後で反転することで右寄せた状態になる
-    return movedRow.reverse();
+    // 左寄せの処理を加える(11-3-0)
+    const movedResult = moveRowLeft(reversedRow);
+    // moveRowLeftのスコアと配列の値を外に出せるように(11-3-1)
+    return {
+        row: movedResult.reverse(),
+        score: movedResult.score,
+    };
 }
 // 右移動の入力処理(6-0-1)
 function moveRight(board) {
+    let totalScore = 0;
     // board情報を読み込みrowという変数でmap保存⇒右移動の処理を入れる(6-0-2)
-    const newBoard = board.map((row) => moveRowRight(row));
+    const newBoard = board.map((row) => {
+        // 右に動かしたときスコアを入れる処理
+        const moveResult = moveRowRight(row);
+        totalScore += moveResult.score;
+        return moveResult.row;
+    });
+
     // 値を返す(6-0-2)
-    return newBoard;
+    return {
+        board: newBoard,
+        score: totalScore,
+    };
 }
 
 // 盤面を上に動かす(7-0)
