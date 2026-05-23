@@ -36,10 +36,14 @@ function moveRowLeft(row) {
     const numbers = row.filter((cell) => cell !== null);
     // 合体後の配列を用意(3-2)
     const result = [];
+    // moveRowLeftでrowだけじゃなくてscoreも返せるように追記していく(11-0)
+    let gainedScore = 0;
     // 1つずつ確認する(3-3)
     for (let i = 0; i < numbers.length; i++) {
         if (numbers[i] === numbers[i + 1]) {
-            result.push(numbers[i] * 2);
+            const mergedNumber = numbers[i] * 2;
+            result.push(mergedNumber);
+            gainedScore += mergedNumber;
             i++;
         } else {
             result.push(numbers[i])
@@ -49,15 +53,31 @@ function moveRowLeft(row) {
     while (result.length < 4) {
         result.push(null)
     }
-    // resultに結果を外に渡す3-5
-    return result;
+    // resultに結果を外に渡す3-5　scoreも返してほしいのでgainedScoreを加える(11-1)
+    return {
+        row: result,
+        score: gainedScore,
+    };
 }
 
 // 盤面全体を左に動かす関数(4-1)
 function moveLeft(board) {
+    // 移動後のスコアの保存先(11-1-0)
+    let totalGainedScore = 0;
     // boardを引数としてmoveRowLeftを適用したrowを作る(4-2)
-    const newBoard = board.map((row) => moveRowLeft(row));
-    return newBoard;
+    const newBoard = board.map((row) => {
+        // scoreの内部処理(11-2-0)
+        const result = moveRowLeft(row);
+
+        totalGainedScore += result.score;
+
+        return result.row;
+    });
+
+    return {
+        board: newBoard,
+        score: totalGainedScore,
+    };
 }
 
 // 右移動の内部処(6-0)
@@ -175,40 +195,52 @@ function createInitialBoard() {
 }
 
 
+
+
 function App() {
     // 空の盤面を作ってランダムに2を2つ生成する(10-0-1)
     const [board, setBoard] = useState(createInitialBoard);
     // gameOverようのuseState
     const [gameOver, setGameOver] = useState(false);
+    // スコア用useState
+    const [score, setScore] = useState(0);
 
 
     function restartGame() {
         setBoard(createInitialBoard());
         setGameOver(false);
+        setScore(0);
     }
     // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
+        // gameOver中何か起きないようにするための安全装置(11-2-0)
+        if (gameOver) return;
         // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
-
-        let moveBoard;
+        // resultの内容を入れる箱(11-3-0)
+        let moveResult;
         // 移動させた後にさせる前と後で違いがあるかを判別する処理(9-0-1)
         if (event.key === "ArrowLeft") {
-            moveBoard = moveLeft(board);
+            moveResult = moveLeft(board);
         } else if (event.key === "ArrowRight") {
-            moveBoard = moveRight(board)
+            moveResult = moveRight(board)
         } else if (event.key === "ArrowUp") {
-            moveBoard = moveUp(board)
+            moveResult = moveUp(board)
         } else if (event.key === "ArrowDown") {
-            moveBoard = moveDown(board)
+            moveResult = moveDown(board)
         } else {
             return;
         }
+
+        const moveBoard = moveResult.board;
 
         if (!isBoardChanged(board, moveBoard)) {
             return;
         }
         // 全部潜り抜けたものがタイルを増やせる(9-0-2)
         const boardWithNewTile = addRandomTile(moveBoard);
+
+        setBoard(boardWithNewTile);
+        setScore((prevScore) => prevScore + moveResult.score)
         //   ゲームオーバーの判定9-0-3
         if (isGameOver(boardWithNewTile)) {
             setGameOver(true);
@@ -244,6 +276,7 @@ function App() {
     return (
         <div className="game" tabIndex="0" onKeyDown={handleKeyDown}>
             <h1>2048</h1>
+            <h2>Score: {score}</h2>
             {gameOver && <h2>ゲームオーバー！</h2>}
 
             <button onClick={restartGame}>
