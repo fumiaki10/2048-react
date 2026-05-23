@@ -36,10 +36,14 @@ function moveRowLeft(row) {
     const numbers = row.filter((cell) => cell !== null);
     // 合体後の配列を用意(3-2)
     const result = [];
+    // moveRowLeftでrowだけじゃなくてscoreも返せるように追記していく(11-0)
+    let gainedScore = 0;
     // 1つずつ確認する(3-3)
     for (let i = 0; i < numbers.length; i++) {
         if (numbers[i] === numbers[i + 1]) {
-            result.push(numbers[i] * 2);
+            const mergedNumber = numbers[i] * 2;
+            result.push(mergedNumber);
+            gainedScore += mergedNumber;
             i++;
         } else {
             result.push(numbers[i])
@@ -49,37 +53,68 @@ function moveRowLeft(row) {
     while (result.length < 4) {
         result.push(null)
     }
-    // resultに結果を外に渡す3-5
-    return result;
+    // resultに結果を外に渡す3-5　scoreも返してほしいのでgainedScoreを加える(11-1)
+    return {
+        row: result,
+        score: gainedScore,
+    };
 }
 
 // 盤面全体を左に動かす関数(4-1)
 function moveLeft(board) {
+    // 移動後のスコアの保存先(11-1-0)
+    let totalGainedScore = 0;
     // boardを引数としてmoveRowLeftを適用したrowを作る(4-2)
-    const newBoard = board.map((row) => moveRowLeft(row));
-    return newBoard;
+    const newBoard = board.map((row) => {
+        // scoreの内部処理(11-2-0)
+        const result = moveRowLeft(row);
+
+        totalGainedScore += result.score;
+
+        return result.row;
+    });
+
+    return {
+        board: newBoard,
+        score: totalGainedScore,
+    };
 }
 
 // 右移動の内部処(6-0)
 function moveRowRight(row) {
     // row情報をコピーして反転させる(6-1)
     const reversedRow = [...row].reverse();
-    // 反転コピーされたやつに左入力の時と同じ処理で左寄せに(6-2)
-    const movedRow = moveRowLeft(reversedRow);
-    // 左寄せになった後で反転することで右寄せた状態になる
-    return movedRow.reverse();
+    // 左寄せの処理を加える(11-3-0)
+    const movedResult = moveRowLeft(reversedRow);
+    // moveRowLeftのスコアと配列の値を外に出せるように(11-3-1)
+    return {
+        row: movedResult.row.reverse(),
+        score: movedResult.score,
+    };
 }
 // 右移動の入力処理(6-0-1)
 function moveRight(board) {
+    let totalScore = 0;
     // board情報を読み込みrowという変数でmap保存⇒右移動の処理を入れる(6-0-2)
-    const newBoard = board.map((row) => moveRowRight(row));
+    const newBoard = board.map((row) => {
+        // 右に動かしたときスコアを入れる処理
+        const moveResult = moveRowRight(row);
+        totalScore += moveResult.score;
+        return moveResult.row;
+    });
+
     // 値を返す(6-0-2)
-    return newBoard;
+    return {
+        board: newBoard,
+        score: totalScore,
+    };
 }
 
 // 盤面を上に動かす(7-0)
 function moveUp(board) {
     // コピーを横一列ずつ取得(7-1)
+    let totalScore = 0;
+
     const newBoard = board.map((row) => [...row]);
     // とってきたコピーを縦ごとに引っ張ってきて(7-2)
     for (let colIndex = 0; colIndex < 4; colIndex++) {
@@ -91,25 +126,35 @@ function moveUp(board) {
         ];
         // moveRowLeftを適用して合体後の処理にする(7-3)
         const movedColumn = moveRowLeft(column);
+
+        totalScore += movedColumn.score;
         // そこから縦に入れ直す
+        // .rowを追加して配列データを抜き出せるように追記(11-4-0)
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+            newBoard[rowIndex][colIndex] = movedColumn.row[rowIndex];
         }
     }
 
-    return newBoard
+    return {
+        board: newBoard,
+        score: totalScore,
+    };
 }
 
 // 下入力をする(8-0)
-function moveColumnDown(Column) {
+function moveColumnDown(column) {
 
-    const reversedColumn = [...Column].reverse();
+    const reversedColumn = [...column].reverse();
 
-    const movedColumn = moveRowLeft(reversedColumn);
+    const movedResult = moveRowLeft(reversedColumn);
 
-    return movedColumn.reverse();
+    return {
+        row: movedResult.row.reverse(),
+        score: movedResult.score,
+    };
 }
 function moveDown(board) {
+    let totalScore = 0;
     const newBoard = board.map((row) => [...row]);
     for (let colIndex = 0; colIndex < 4; colIndex++) {
         const column = [
@@ -120,12 +165,18 @@ function moveDown(board) {
         ];
         // 上入力だとmoveRowLeftだがひっくりかえすのでmoveColumnDown(8-1)
         const movedColumn = moveColumnDown(column);
+
+        totalScore += movedColumn.score;
+
         for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-            newBoard[rowIndex][colIndex] = movedColumn[rowIndex];
+            newBoard[rowIndex][colIndex] = movedColumn.row[rowIndex];
         }
     }
 
-    return newBoard
+    return {
+        board: newBoard,
+        score: totalScore,
+    }
 }
 
 // ボードの状態を判別して入力後生成するか決める処理(9-0)
@@ -133,39 +184,98 @@ function isBoardChanged(beforeBoard, afterBoard) {
     return JSON.stringify(beforeBoard) !== JSON.stringify(afterBoard);
 }
 
+// gameOverの判定(9-0)
+function isGameOver(board) {
+    // nullがあればreturnしてくれ(9-1)
+    if (board.flat().includes(null)) {
+        return false;
+    }
+    // 横方向に同じ数字があるか確認(9-2)
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+        for (let colIndex = 0; colIndex < 3; colIndex++) {
+            if (board[rowIndex][colIndex] === board[rowIndex][colIndex + 1]) {
+                return false;
+            }
+        }
+    }
+    // こっちは縦方向(9-3)
+    for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
+        for (let colIndex = 0; colIndex < 4; colIndex++) {
+            if (board[rowIndex][colIndex] === board[rowIndex + 1][colIndex]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+
+}
+// 空の盤面を作って2を2つ生成する(10-0)
+function createInitialBoard() {
+    const emptyBoard = [
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+    ];
+
+    const boardWithOneTile = addRandomTile(emptyBoard);
+    const boardWithTwoTiles = addRandomTile(boardWithOneTile);
+
+    return boardWithTwoTiles;
+}
+
+
 
 
 function App() {
-    const [board, setBoard] = useState(() =>
-        addRandomTile([
-            [null, null, null, null],
-            [null, null, null, null],
-            [null, null, null, null],
-            [null, null, null, null],
-        ])
-    );
+    // 空の盤面を作ってランダムに2を2つ生成する(10-0-1)
+    const [board, setBoard] = useState(createInitialBoard);
+    // gameOverようのuseState
+    const [gameOver, setGameOver] = useState(false);
+    // スコア用useState
+    const [score, setScore] = useState(0);
+
+
+    function restartGame() {
+        setBoard(createInitialBoard());
+        setGameOver(false);
+        setScore(0);
+    }
     // 押された矢印キーの種類によって処理を返す(5-0)
     function handleKeyDown(event) {
+        // gameOver中何か起きないようにするための安全装置(11-2-0)
+        if (gameOver) return;
         // 押されたキーが左矢印なら移動した後の結果を２をつけて返す (5-1)
-
-        let moveBoard;
+        // resultの内容を入れる箱(11-3-0)
+        let moveResult;
         // 移動させた後にさせる前と後で違いがあるかを判別する処理(9-0-1)
         if (event.key === "ArrowLeft") {
-            moveBoard = moveLeft(board);
+            moveResult = moveLeft(board);
         } else if (event.key === "ArrowRight") {
-            moveBoard = moveRight(board)
+            moveResult = moveRight(board)
         } else if (event.key === "ArrowUp") {
-            moveBoard = moveUp(board)
+            moveResult = moveUp(board)
         } else if (event.key === "ArrowDown") {
-            moveBoard = moveDown(board)
+            moveResult = moveDown(board)
+        } else {
+            return;
         }
+
+        const moveBoard = moveResult.board;
 
         if (!isBoardChanged(board, moveBoard)) {
             return;
         }
         // 全部潜り抜けたものがタイルを増やせる(9-0-2)
         const boardWithNewTile = addRandomTile(moveBoard);
+
         setBoard(boardWithNewTile);
+        setScore((prevScore) => prevScore + moveResult.score);
+        //   ゲームオーバーの判定9-0-3
+        if (isGameOver(boardWithNewTile)) {
+            setGameOver(true);
+        }
         // 以前のifの処理。
         // if (event.key === "ArrowLeft") {
         //     const moveBoard = moveLeft(board);
@@ -193,7 +303,12 @@ function App() {
     return (
         <div className="game" tabIndex="0" onKeyDown={handleKeyDown}>
             <h1>2048</h1>
+            <h2>Score: {score}</h2>
+            {gameOver && <h2>ゲームオーバー！</h2>}
 
+            <button onClick={restartGame}>
+                リスタート
+            </button>
             <div className="board">
                 {/* あとで16マスそのものに変更を加えるならkey=indexは非推奨 */}
                 {board.flat().map((cell, index) => (
@@ -202,6 +317,7 @@ function App() {
                     </div>
                 ))}
             </div>
+
         </div>
     );
 }
